@@ -1,0 +1,11 @@
+from session import UserSession
+from generators import GridGenerator
+
+def main():
+    """Main entry point for the game."""
+    markscheme = GridGenerator()
+    game = UserSession(user_id="player1")
+    game.play_game()
+
+if __name__ == "__main__":
+    main()
