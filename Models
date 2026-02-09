@@ -1,0 +1,47 @@
+import numpy as np
+import random
+
+class Grid:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self.grid = []
+        self.row_sums = []
+        self.col_products = []
+
+    def generate_random_grid(self):
+        """Generates a random grid of numbers (1-4) ensuring unique column products."""
+        while True:
+            self.grid = [[random.randint(1, 4) for _ in range(self.cols)] for _ in range(self.rows)]
+            self.calculate_totals()
+            if len(set(self.col_products)) > 1:  # Ensure column products are not all the same
+                break
+
+    def calculate_totals(self):
+        """Calculates row sums and column products."""
+        self.row_sums = [sum(row) for row in self.grid]
+        self.col_products = [np.prod(col) for col in zip(*self.grid)]
+
+    def display_grid_with_totals(self, filled=True):
+        """Displays the grid along with row sums and column products."""
+        print("\nGrid:")
+        for i in range(self.rows):
+            if filled:
+                print(" | ".join(map(str, self.grid[i])), "|", self.row_sums[i])
+            else:
+                print(" | ".join(" " * len(str(self.grid[i][j])) for j in range(self.cols)), "|", self.row_sums[i])
+
+        print("-" * (self.cols * 4 + 2))
+        print("   ".join(map(str, self.col_products)))
+
+    def copy(self):
+        """Returns a deep copy of the grid."""
+        new_grid = Grid(self.rows, self.cols)
+        new_grid.grid = [row[:] for row in self.grid]
+        new_grid.row_sums = self.row_sums[:]
+        new_grid.col_products = self.col_products[:]
+        return new_grid
+
+    def __str__(self):
+        """String representation of the grid."""
+        return "\n".join([" ".join(map(str, row)) for row in self.grid])
