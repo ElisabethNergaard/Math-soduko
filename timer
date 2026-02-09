@@ -1,0 +1,38 @@
+import time
+import threading
+
+class TimerWithPenalty:
+    def __init__(self, initial_time):
+        self.initial_time = initial_time
+        self.remaining_time = initial_time
+        self.mistakes = 0
+        self.running = False
+        self.lock = threading.Lock()
+
+    def make_mistake(self):
+        with self.lock:
+            if self.running:
+                self.mistakes += 1
+                self.remaining_time -= 2
+                if self.remaining_time < 0:
+                    self.remaining_time = 0
+                print(f"Mistake made! 2 seconds deducted. Mistakes: {self.mistakes}")
+
+    def add_time(self, seconds):
+        with self.lock:
+            self.remaining_time += seconds
+            print(f"Added {seconds} seconds. New time: {self.remaining_time} seconds")
+
+    def start(self):
+        def run():
+            self.running = True
+            print("Timer started.")
+            while self.remaining_time > 0:
+                time.sleep(1)
+                with self.lock:
+                    self.remaining_time -= 1
+                    print(f"Time left: {self.remaining_time} seconds")
+            self.running = False
+            print("Time's up!")
+
+        threading.Thread(target=run).start()
