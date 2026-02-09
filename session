@@ -1,0 +1,98 @@
+import numpy as np
+import random
+import time
+
+class UserSession:
+    def __init__(self, user_id, min_val=1, max_val=4, max_size=9):
+        self.user_id = user_id
+        self.min_val = min_val
+        self.max_val = max_val
+        self.max_size = max_size
+
+    def generate_random_grid(self, size):
+        while True:
+            grid = [[random.randint(self.min_val, self.max_val) for _ in range(size)] for _ in range(size)]
+            row_sums = [sum(row) for row in grid]
+            col_products = [np.prod(col) for col in zip(*grid)]
+            if len(set(col_products)) > 1:
+                break
+        return grid, row_sums, col_products
+
+    def display_grid_with_totals(self, user_grid, row_sums, col_products, show_values=False):
+        """Display the grid with row sums and column products."""
+        size = len(user_grid)
+        print("\nGrid: (Row Sums →)")
+        header = "     " + "  ".join([f"C{j+1}" for j in range(size)]) + "   Sum"
+        print(header)
+        print("   " + "-" * (4 * size + 8))
+        
+        for i in range(size):
+            row = []
+            for j in range(size):
+                val = user_grid[i][j]
+                row.append(str(val) if val is not None else " ")
+            print(f"R{i+1} | " + " | ".join(row) + f" |  {row_sums[i]}")
+        
+        print("   " + "-" * (4 * size + 8))
+        print("     " + "   ".join([str(cp) for cp in col_products]) + "  ← Col Products")
+
+    def start_level(self, size):
+        """Start a single level/grid."""
+        print(f"\n--- Level {size - 2}: {size}x{size} Grid ---")
+        grid, row_sums, col_products = self.generate_random_grid(size)
+        user_grid = [[None for _ in range(size)] for _ in range(size)]
+        mistakes = 0
+        filled_cells = 0
+        total_cells = size * size
+        start_time = time.time()
+
+        while filled_cells < total_cells:
+            self.display_grid_with_totals(user_grid, row_sums, col_products)
+            print(f"\nMistakes: {mistakes}")
+            elapsed = int(time.time() - start_time)
+            print(f"Time elapsed: {elapsed} seconds")
+
+            try:
+                coords = input(f"Enter coordinates to fill (example: 2 3 for row 2, col 3): ").strip()
+                if not coords:
+                    print(" Input cannot be empty.")
+                    continue
+                i, j = map(int, coords.split())
+                if not (1 <= i <= size and 1 <= j <= size):
+                    print(" Coordinates out of bounds.")
+                    continue
+                if user_grid[i-1][j-1] is not None:
+                    print(" Cell already filled.")
+                    continue
+
+                value = int(input(f"Enter value for cell ({i},{j}) [range {self.min_val}-{self.max_val}]: "))
+                if not (self.min_val <= value <= self.max_val):
+                    print(f" Value must be between {self.min_val} and {self.max_val}.")
+                    continue
+
+                if value == grid[i-1][j-1]:
+                    print(" Correct!")
+                    user_grid[i-1][j-1] = value
+                    filled_cells += 1
+                else:
+                    print(" Incorrect!")
+                    mistakes += 1
+
+            except ValueError:
+                print(" Invalid input. Please enter numbers only.")
+
+        total_time = int(time.time() - start_time)
+        print("\n Puzzle Completed!")
+        print(f"Total mistakes made: {mistakes}")
+        print(f"Total time taken: {total_time} seconds")
+
+        print("\nFinal Grid:")
+        self.display_grid_with_totals(user_grid, row_sums, col_products, show_values=True)
+
+        print("\nCorrect Grid for Comparison:")
+        self.display_grid_with_totals(grid, row_sums, col_products, show_values=True)
+
+    def play_game(self):
+        """Main game loop that progresses through levels."""
+        for size in range(3, self.max_size + 1):
+            self.start_level(size)
